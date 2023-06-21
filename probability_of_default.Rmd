@@ -1,0 +1,831 @@
+---
+title: "PROBABILITY OF DEFAULT"
+author: "Faustyna Bąk"
+date: "2023-06-02"
+output: 
+  html_document:
+    code_folding: hide
+    theme: paper 
+    toc: true
+    toc_depth: 3
+    toc_float: true
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{=html}
+<style>
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+</style>
+```
+# Prognozowanie prawdopodobieństwa niewykonania zobowiązania kredytowego.
+
+# WPROWADZENIA DO PROBLEMU RYZYKA KREDYTOWEGO
+
+::: {style="text-align: justify"}
+Ryzyko kredytowe definiowane jest jako „możliwość niedotrzymania
+warunków umowy przez drugą stronę kontraktu, co oznacza, iż strona
+narażona na ryzyko nie otrzyma w oczekiwanym terminie płatności
+określonej warunkami kontraktu"[^1].
+
+Aby ocenić wiarygodność kredytową klienta, banki często stosują
+podejście modularne, które polega na wyselekcjonowaniu istotnych
+informacji i ich agregowaniu w kilku modułach. np. w module danych
+podstawowych (m.in. demograficznych: wiek klienta, stan cywilny itp.),
+module danych finansowych (m.in. dochody klienta, koszty utrzymania,
+koszty czynszu, stałe opłaty itp.), Każdy moduł dostarcza istotne
+informacje do oceny wiarygodności kredytowej i ryzyka związanego z
+udzieleniem kredytu. Informacje są przetwarzane z wykorzystaniem
+algorytmów obliczeniowych (scoringowych) i w efekcie uzyskiwany jest
+wynik przedstawiający ocenę wiarygodności klienta w każdym z modułów
+oddzielnie.[^2]
+
+## PROBABILITY OF DEFAULT
+
+Ocena wiarygodności klienta (rating) jest wykorzystywana przez banki
+w procesie podejmowania decyzji kredytowych. Rating jest to ocena
+przyszłejsytuacji gospodarczej i  finansowej klienta nadawana przez bank
+na podstawie stosowanego modelu (algorytmu). Ma wpływ na warunki cenowe
+kredytu oraz jest wykorzystywana w procesach monitoringu klienta.
+Informacje pochodzące z różnych źródeł (podstawowe, finansowe, z  biur
+kredytowych, o  korzystaniu z  rachunków bieżących) dla różnych typów
+klientów są  prezentowane w formie jednej, łatwej do interpretacji
+wielkości PD (Probability of Default).
+
+Rating kredytowy nie może być zmieniany arbitralnie przez dowolnego
+pracownika banku. Ocena ratingowa obejmuje nie tylko klientów, ale także
+poręczycieli i współkredytobiorców. Rating może być ustalany na
+podstawie parametru PD (Probability of Default) lub poprzez przypisanie
+klienta do konkretnej klasy ratingowej. Metodologia określania ratingu
+zależy od rodzaju klienta oraz dostępności i jakości danych. Parametr PD
+jest miarą, która wskazuje na stopień prawdopodobieństwa niewykonania
+przez klienta zobowiązań kredytowych (zdarzenia default). Proces
+określania ratingu jest oparty na odpowiednich zasadach i procedurach,
+które zapewniają obiektywność i niezależność oceny. [^3]
+
+Wskaźnik PD jest określany liczbowo w przedziale od 0 do 1 lub
+procentowo: od 0% do 100%. Oczywiście im PD jest bliższe 1 (100%), tym
+prawdopodobieństwo wystąpienia default jest wyższe, a  więc klient jest
+uznawany za bardziej ryzykownego. Wyznaczenie PD na poziomie 1 (100%)
+oznacza, że zdarzenie default już wystąpiło (tzw. „zły" klient). Wartość
+PD jest ściśle związana z klasą ratingową nadawaną przez bank według
+skali, mającej na celu klasyfikację klientów banku w zależności od
+ryzyka, które generują. [^4]
+
+Celem realizowanego projektu jest zbadanie ryzyka niewypłacalności --
+które jest mierzalne. W tym przypadku analizujemy, czy dana osoba jest w
+stanie wywiązać się ze zobowiązania kredytowego. Ryzyko rynkowe wiąże
+się nie tylko z danymi o kredytobiorcy, ale także jest spowodowane
+czynnikami ogólnogospodarczymi, takimi jak ustrój gospodarczy, polityka
+czy czynniki koniunkturalne, oraz czynnikami losowymi (np. inflacja,
+wojna). Wymienione czynniki wpływają na cały rynek i w związku z tym
+ryzyka rynkowego nie da się zmniejszyć ani wyeliminować. Jednym ze
+sposobów mierzenia ryzyka jest zastosowanie klasycznych metod uczenia
+maszynowego, które pozwalają na podstawie historycznych danych
+przewidzieć zachowania w przyszłości.
+:::
+
+[^1]: M.Wójciak, Metody oceny ryzyka kredytowego, Polskie Wydawnictwo
+    Ekonomiczne, Warszawa, 2007, s.13
+
+[^2]: ZAAWANSOWANE METODY WYCENY RYZYKA KREDYTOWEGO W BANKACH
+    KOMERCYJNYCH W ŚWIETLE WYMOGÓW BAZYLEI II, Marek Kulczycki Akademia
+    Finansów i Biznesu Vistula -- Warszawa
+
+[^3]: [https://bazhum.muzhp.pl/media/files/Zarzadzanie_Teoria_i_Praktyka/Zarzadzanie_Teoria_i_Praktyka-r2011-t-n2\_(4)/Zarzadzanie_Teoria_i_Praktyka-r2011-t-n2\_(4)-s131-138/Zarzadzanie_Teoria_i_Praktyka-r2011-t-n2\_(4)-s131-138.pdf](https://bazhum.muzhp.pl/media/files/Zarzadzanie_Teoria_i_Praktyka/Zarzadzanie_Teoria_i_Praktyka-r2011-t-n2_(4)/Zarzadzanie_Teoria_i_Praktyka-r2011-t-n2_(4)-s131-138/Zarzadzanie_Teoria_i_Praktyka-r2011-t-n2_(4)-s131-138.pdf)
+
+[^4]: Szacowanie prawdopodobieństwa niewypłacalności wybranych metod
+    oceny ryzyka kredytowego, Aleksandra Wójcicka, Uniwersytet
+    Ekonomiczny w Poznaniu, Wydział Informatyki i Gospodarki
+    Elektronicznej, Katedra Badań Operacyjnych, Rozprawa doktorska
+
+# OPIS DANYCH
+
+```{r message=FALSE, warning=FALSE}
+library(DT)
+library(kableExtra)
+library(car)                                             
+library(ggplot2)
+library(mfx)
+library(caret)
+library(lattice)
+library(pROC)
+library(rpart)
+```
+
+::: {style="text-align: justify"}
+Dane zostały pobrane z kaggle[^5]. Zbiór danych zbudowany jest z 10
+zmiennych i 32581 obserwacji. Zestaw danych zawiera kolumny, które
+reprezentują informacje z biura kredytowego.
+:::
+
+[^5]: <https://www.kaggle.com/datasets/laotse/credit-risk-dataset?fbclid=IwAR15X0OgsAvd-vIyy0TH-wJ-N2bzjtbp8pz0DxGiAlWg9STho-VB6gwsBTo>
+
+```{r}
+#wczytanie danych
+dane <- read.csv("dane.csv", sep=",", dec = ",")
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+#usuwam dwie zmienne bo nie wiem co oznaczają
+dane <- dane[, -6]
+dane <- dane[, -10]
+```
+
+```{r message=FALSE, warning=FALSE}
+str(dane)
+datatable(dane, caption = "Dane")
+
+```
+
+::: {style="text-align: justify"}
+W ramach badania, zmienną objaśnianą jest **loan_status**, natomiast
+pozostałe zmienne działają jako zmienne objaśniające, mające potencjalny
+wpływ na zmienną zależną. Szczegółowy opis zbioru danych Credit Risk:
+
+-   **person_age** - wiek
+
+-   **person_income** - roczny dochód
+
+-   **person_home_ownership** - rodzaj typ własności domu (rent -
+    wynajmowany, own - własny, mortgage - hipoteka, other- inny)
+
+-   **person_emp_length** - długość zatrudniena (w latach)
+
+-   **loan_intent** - cel pożyczki(personal - osobisty, education
+    -edukacja, medical - medycyna, venture - przedsięwzięcie,
+    homeimprovement - inwestycja w dom, debtconsolidation - konsolidacja
+    zadłużenia)
+
+-   **loan_amnt** - kwota kredytu
+
+-   **loan_int_rate** - stopa procentowa kredytu
+
+-   **loan_status** - status kredytu (0 - spłacany, 1 - niespłacany)
+
+-   **loan_percent_income** - stosunek raty kredytu miesięcznej do
+    miesięcznych zarobków
+
+-   **cb_preson_cred_hist_length** - długość historii kredytowej danego
+    klienta
+
+Zmienne **person_emp_length**, **loan_int_rate** i
+**loan_percent_income** zostały przekształcone z wartości tekstowych na
+wartości numeryczne. Usunięto również brakujące obserwacje. Następnie, w
+celu identyfikacji outlierów, dokonano analizy tych zmiennych za pomocą
+wykresów pudełkowych.
+:::
+
+```{r}
+#zamiana chr na num
+dane[, 4] <- as.numeric(dane$person_emp_length)
+dane[, 7] <- as.numeric(dane$loan_int_rate)
+dane[, 9] <- as.numeric(dane$loan_percent_income)
+
+dane <- na.omit(dane) #usunięcie NA
+
+par(mfrow=c(2,3))
+boxplot(dane$person_age, main="person_age")
+boxplot(dane$person_income, main="person_income" )
+boxplot(dane$person_emp_length, main="person_emp_length")
+boxplot(dane$loan_amnt, main="loan_amnt")
+boxplot(dane$loan_int_rate, main="loan_int_rate")
+boxplot(dane$loan_percent_income, main="loan_percent_income")
+
+#car::Boxplot(dane$person_age, data = dane) #75, 164, 28389, 509 
+dane <- dane[-c(75, 164, 28389, 509),]
+
+#car::Boxplot(dane$person_income, data = dane) #26422 28561 28067 28065 15683 25623
+dane <- dane[-c(26422,28561 ,28067 ,28065 ,15683, 25623),]
+dane$person_income <- log(dane$person_income)
+
+#car::Boxplot(dane$person_emp_length, data = dane)# 1   185 
+dane <- dane[-c(1, 185 ),]
+```
+
+::: {style="text-align: justify"}
+Zmienna person_age posiada wyraźnie odstające obserwacje (75, 164,
+28389, 509). Z racji, że mogą one zaburzać estymację zdecydowano się na
+ich usunięcie. Natomiast zmienna person_income posiada nie tylko
+wyraźnie odstające obserwacje, ale również bardzo wąskie pudełko. Wygląd
+rozkładu nie poprawia się znacznie po usunięciu outliarów z próby,
+dlatego zdecydowano się zlogarytmować zmienną. Kolejna zmienna
+person_emp_lenght posiada wąskie pudełko i dwie wyraźnie odstające
+obserwacje, które również zostały usunięte. Pozostałe zmienne nie
+wykazują znaczących obserwacji odstających.
+
+W ramach kolejnego etapu analizy danych, przeprowadzono obliczenie
+podstawowych statystyk opisowych.
+:::
+
+```{r}
+#statystyki opisowe
+summary(dane)
+```
+
+::: {style="text-align: justify"}
+Najmłodsza osoba ma 20 lat, natomiast wiek osoby najstarszej wynosi 84
+lata. Średni wiek osób wynosi około 28 lat. Roczny dochód osób po
+zlogarytmowaniu zawiera się w przedziale 8,294 - 13,762. Z kolei
+najdłuższy okres zatrudnienia jest równy 41 lat. W badaniu są
+uwzględnione również osoby, które nie są nigdzie zatrudnione. Największa
+kwota zaciągniętego kredytu wynosi 35000 zł, a najniższa 500 zł. Średnia
+wartość kredytu jest równa 9655 zł. Stopa procentowa przyjmuje wartości
+z przedziału 5,42 - 23,22. Najdłuższa długość historii kredytowej danego
+klienta wyonosi 30 lat, natomiast najkrótsza jest równa 2.
+:::
+
+```{r }
+#rozkłady zmiennych 
+wykresy <- par( mfrow= c(3,3))
+hist(dane$person_age, col="lightgreen", border="black",
+     prob = TRUE)
+lines(density(dane$person_age),
+      lwd = 2,
+      col = "red")
+
+hist(dane$person_income, col="lightgreen", border="black",
+     prob = TRUE)
+lines(density(dane$person_income),
+      lwd = 2,
+      col = "red")
+
+hist(dane$person_emp_length, col="lightgreen", border="black",
+     prob = TRUE)
+lines(density(dane$person_emp_length),
+      lwd = 2,
+      col = "red")
+
+hist(dane$loan_amnt, col="lightgreen", border="black",
+     prob = TRUE)
+lines(density(dane$loan_amnt),
+      lwd = 2,
+      col = "red")
+
+hist(dane$loan_int_rate, col="lightgreen", border="black",
+     prob = TRUE)
+lines(density(dane$loan_int_rate),
+      lwd = 2,
+      col = "red")
+      
+hist(dane$loan_percent_income, col="lightgreen", border="black",
+     prob = TRUE)
+lines(density(dane$loan_percent_income),
+      lwd = 2,
+      col = "red")    
+      
+hist(dane$cb_person_cred_hist_length, col="lightgreen", border="black",
+     prob = TRUE)
+lines(density(dane$cb_person_cred_hist_length),
+      lwd = 2,
+      col = "red") 
+
+
+```
+
+::: {style="text-align: justify"}
+Widzimy, że najczęściej ludzie starają się o kredyt w wieku 20 do 40
+lat - mamy tutaj rozkład lewostronny. Dochód ma rozkład normalny.
+Długość zatrudnienia to najczęściej okres w przedziale 0 - 10 lat. Suma
+kredytu i stopa procentowa jest już bardziej zróżnicowana.
+:::
+
+```{r}
+library(plyr)
+count(dane$loan_status)
+```
+
+::: {style="text-align: justify"}
+W zbiorze danych jest 6202 obserwacje, które przedstawiają osoby, które
+nie wywiązały się z zobowiązania i nie spłaciły kredytu. Natomiast w
+22424 przypadkach spłacono kredyt.
+
+Z racji, że zmienne **loan_intent** oraz **person_home_ownership** są
+zmiennymi kategorycznymi, przystąpiono do przekonwertowania ich. Do tego
+celu użyto funkcji dummy_cols, która tworzy na podstawie przyjętej
+zmiennej (zmiennej bazowej) nowe zmienne zero-jedunkowe.\
+W zmiennej **loan_intent** jako zmienną bazującą jest PERSONAL. W
+zmiennej **person_home_ownership** jako zmienną bazującą jest RENT.
+:::
+
+```{r message=FALSE, warning=FALSE}
+library(fastDummies)
+#tworzenie zmiennych 
+dane <- dummy_cols(dane, select_columns = c("loan_intent"), remove_selected_columns = TRUE, remove_first_dummy  = TRUE)
+dane <- dummy_cols(dane, select_columns = c("person_home_ownership"), remove_selected_columns = TRUE, remove_first_dummy  = TRUE)
+datatable(dane, caption = "Dane")
+```
+
+::: {style="text-align: justify"}
+Po dokonaniu wszystkich koniecznych przekształceń rozpoczęto
+prognozowanie prawdopodobieństwa niewykonania zobowiązania kredytowego.
+W pierwszym etapie podzielono zbiór danych na zbiór testowy i
+treningowy.
+:::
+
+```{r}
+# podział na testowy i treningowy 
+dane_treningowe = dane[1:20000,]
+dane_testowe = dane[20001:28626,]
+
+```
+
+::: {style="text-align: justify"}
+Na zbiorze treningowym stworzono **model1**.
+
+-   **ZMIENNA OBJAŚNIANA**: loan_status, czyli wywiązanie się z
+    zobowiązania spłaty z kredytu lub nie
+
+-   **ZMIENNE OBJAŚNIAJĄCE**: person_age, person_income,
+    person_emp_length, loan_amnt, loan_int_rate, loan_percent_income,
+    cb_person_cred_hist_length, loan_intent_EDUCATION,
+    loan_intent_HOMEIMPROVEMENT, loan_intent_MEDICAL,
+    loan_intent_PERSONAL, loan_intent_VENTURE,
+    person_home_ownership_OTHER, person_home_ownership_OWN,
+    person_home_ownership_RENT.
+:::
+
+# MODEL REGRESJI LOGISTYCZNEJ[^6]
+
+[^6]: <https://rstudio-pubs-static.s3.amazonaws.com/688637_da7025242ddd4c59ae79f812c0e1758c.html>
+    <https://rpubs.com/Tirentrus/Project1> "A general framework for
+    comparing predictions and marginal effects across models" Trenton D.
+    Mize, Long Doany, J. Scott Longz
+
+```{r}
+# estymacja 
+model1 = glm(loan_status ~ person_age + person_income + person_emp_length + loan_amnt + loan_int_rate + loan_percent_income + cb_person_cred_hist_length + loan_intent_EDUCATION+ loan_intent_HOMEIMPROVEMENT + loan_intent_MEDICAL + loan_intent_PERSONAL + loan_intent_VENTURE + person_home_ownership_OTHER + person_home_ownership_OWN + person_home_ownership_RENT , data = dane_treningowe, family = binomial)
+summary(model1)
+```
+
+::: {style="text-align: justify"}
+W otrzymanym modelu cztery zmienne są nieistotne, czyli:
+
+-   person_age,
+
+-   person_emp_length,
+
+-   loan_amnt
+
+-   person_home_ownership_OTHER.
+
+Najbardziej nieistotna jest zmienna z największą wartością p-value -
+jest nią zmienna person_age, dlatego zostanie ona usunięta jako
+pierwsza. Dla danego modelu oszacowano kryterium informacyjne Akaike na
+14581.
+:::
+
+```{r}
+model1 = glm(loan_status ~ person_income + person_emp_length + loan_amnt + loan_int_rate + loan_percent_income + cb_person_cred_hist_length + loan_intent_EDUCATION+ loan_intent_HOMEIMPROVEMENT + loan_intent_MEDICAL + loan_intent_PERSONAL + loan_intent_VENTURE + person_home_ownership_OTHER + person_home_ownership_OWN + person_home_ownership_RENT , data = dane_treningowe, family = binomial)
+summary(model1)
+
+```
+
+::: {style="text-align: justify"}
+Otrzymano model z 3 nieistotnymi zmiennymi. W tym kroku z modelu
+zostanie usunięta zmienna person_emp_length, ponieważ jej p-value jest
+najwyższe wynosi 0.352491. Kryterium informacyjne Akaike zmniejsyzło się
+o 2.
+:::
+
+```{r}
+model1 = glm(loan_status ~ person_income + loan_amnt + loan_int_rate + loan_percent_income + cb_person_cred_hist_length + loan_intent_EDUCATION+ loan_intent_HOMEIMPROVEMENT + loan_intent_MEDICAL + loan_intent_PERSONAL + loan_intent_VENTURE + person_home_ownership_OTHER + person_home_ownership_OWN + person_home_ownership_RENT , data = dane_treningowe, family = binomial)
+summary(model1)
+  
+```
+
+Po usunięciu zmiennej person_emp_length model poprawił się. W kolejnym
+kroku usunięciu zostanie poddana zmienna person_home_ownership_OTHER
+
+```{r}
+model1 = glm(loan_status ~ person_income + loan_amnt + loan_int_rate + loan_percent_income + cb_person_cred_hist_length + loan_intent_EDUCATION+ loan_intent_HOMEIMPROVEMENT + loan_intent_MEDICAL + loan_intent_PERSONAL + loan_intent_VENTURE + person_home_ownership_OWN + person_home_ownership_RENT , data = dane_treningowe, family = binomial)
+summary(model1)
+  
+
+```
+
+::: {style="text-align: justify"}
+Tym razem została już tylko jedna nieistotna zmienna -- loan_amnt, zatem
+zdecydowano się ją odrzucić i oszacować model bez niej. Otrzymano
+następujące rezultaty:
+:::
+
+```{r}
+finalny_model = glm(loan_status ~ person_income + loan_int_rate + loan_percent_income + cb_person_cred_hist_length + loan_intent_EDUCATION+ loan_intent_HOMEIMPROVEMENT + loan_intent_MEDICAL + loan_intent_PERSONAL + loan_intent_VENTURE + person_home_ownership_OWN + person_home_ownership_RENT , data = dane_treningowe, family = binomial)
+summary(finalny_model)
+```
+
+::: {style="text-align: justify"}
+W modelu pozostały już tylko zmienne statystycznie istotne, w związku z
+czym jest to ostateczna wersja modelu uzyskanego metodą
+krokowo-wsteczną. W modelu zostało 12 zmiennych. Wsółczynnik AIC
+poprawił się o 4 względem początkowego modelu.
+
+## EFEKTY MARGINALNE
+
+::: {style="text-align: justify"}
+Dla stworzonego modelu regresji logistycznej przystapiono do obliczenia
+marginalnych efektów krańcowych przy pomocy funkcji "logitmfx".
+Marginalne efekty krańcowe mierzą jak zmiany w jednej zmiennej wpływają
+na przewidywaną wartość prawdopodobieństwa wystąpienia jakiegoś
+zdarzenia przy stałych wartościach pozostałych zmiennych.
+:::
+
+```{r}
+logitmfx(loan_status ~ person_income + loan_int_rate + loan_percent_income + cb_person_cred_hist_length + loan_intent_EDUCATION+ loan_intent_HOMEIMPROVEMENT + loan_intent_MEDICAL + loan_intent_PERSONAL + loan_intent_VENTURE + person_home_ownership_OWN + person_home_ownership_RENT, data = dane_treningowe)
+```
+
+::: {style="text-align: justify"}
+**INTERPRETACJA:**
+
+-   Zwiększenie person_income (roczny dochód) o jednostkę spowoduje
+    spadek prawdopodonieństwa niewypłacalności o 12,55 punkta
+    procentowego.
+
+-   Zwiększenie loan_int_rate (oprocentowanie pożyczki) o jednostkę
+    skutkuje wrost prawdopodobieństwa niewypłacalności o 3,5 punkta
+    procentowego.
+
+-   Zwiększenie loan_percent_income (Stosunek raty kredytu miesięcznej
+    do miesięcznych zarobków) o jednostkę skutkuje wrost
+    prawdopodobieństwa niewypłacalności o 89,6 punkta procentowego.
+
+-   Zwiększenie cb_person_cred_hist_length (długość historii kredytowej
+    klienta) o jednostkę skutkuje zmniejszenie prawdopodobieństwa
+    niewypłacalności o 0,37 punkta procentowego.
+
+-   Dla kategorii loan_intent_EDUCATION prawdopodobieństwo
+    niewypłacalności o 8,2 punkta procentowego mniejsze od kategorii
+    PERSONAL.
+
+-   Dla kategorii loan_intent_HOMEIMPROVEMENT jest prawdopodobieństwa
+    niewypłacalności większe o 4,82 punkta procentowego od kategorii
+    PESRONAL.
+
+-   Dla kategorii loan_intent_MEDICAL jest prawdopodobieństwo
+    niewypłacalności mniejsze o 1,73 punkta procentowego.
+
+-   Dla kategorii loan_intent_PERSONAL prawdopodobieństwo
+    niewypłacalności mniejsze o 4,85 punkta procentowego od kategorii
+    PESRONAL.
+
+-   Dla kategorii loan_intent_VENTURE jest prawdopodobieństwo
+    niewypłacalności mniejsze o 8,53 punkta procentowego od kategorii
+    PESRONAL.
+
+-   Dla kategorii person_home_ownership_OWN jest prawdopodobieństwo
+    niewypłacalności mniejsze o 10,9 punkta procentowego od kategorii
+    RENT.
+
+-   Dla kategorii person_home_ownership_RENT jest prawdopodobieństwo
+    niewypłacalności większe o 9,02 punkta procentowego od kategorii
+    RENT.
+
+W kolejnym kroku zostaną prognozowane wartości prawdopodobieństwa
+niewypłacalności. Zostaną one oszacowane na podstawie modelu regresji
+logitowej, wynik funkcji predict() zostanie przedstawiony w postaci
+prawdopodobieństwa.
+:::
+
+# PROBABILITY OF DEFAULT - PREDYKCJA
+
+```{r}
+#predykcja 
+predykcja = predict(finalny_model, newdata = dane_testowe, type = "response")
+zrealizowane_wartosci = dane_testowe$loan_status
+
+pree <- cbind(predykcja, zrealizowane_wartosci)
+datatable(pree)
+
+
+
+```
+
+::: {style="text-align: justify"}
+W powyższej tabeli zestawiono przewidywane prawdopodobieństwa
+niewypłacalności oraz rzeczywiste wartość i oceny niewypłacalności (0 -
+spłacony, 1 - niespłacony). Porównując wyniki, trzeba przyznać, że
+bardzo precyzyjnie zostały przewidziane prawdopodobieństwa.
+:::
+
+```{r}
+pree <- data.frame(predykcja, zrealizowane_wartosci)
+pree$przedzial <- cut(pree$predykcja, breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1), include.lowest = TRUE, labels = c("0-0.2", "0.2-0.4", "0.4-0.6", "0.6-0.8","0.8-1" ))
+
+# Obliczenie liczby wartości 0 i 1 w każdym przedziale
+summary_table <- table(pree$przedzial, pree$zrealizowane_wartosci)
+
+histogram_data <- data.frame(Przedział = rownames(summary_table), `Wartość 0` = summary_table[, "0"], `Wartość 1` = summary_table[, "1"])
+barplot(t(as.matrix(histogram_data[, -1])), beside = TRUE, legend.text = c("0", "1"), xlab = "Przedział prawdopodobieństwa", ylab = "Liczba obserwacji", col = c("green", "red"), names.arg = histogram_data$Przedział, main = "Rozkład wartości w poszczególnych przedziałach")
+
+barplot_data <- barplot(t(as.matrix(histogram_data[, -1])), beside = TRUE, legend.text = c("0", "1"), xlab = "Przedział prawdopodobieństwa", ylab = "Liczba obserwacji", col = c("green", "red"), names.arg = histogram_data$Przedział, main = "Rozkład wartości w poszczególnych przedziałach")
+
+text(x = barplot_data, y = t(as.matrix(histogram_data[, -1])) + 5, labels = t(as.matrix(histogram_data[, -1])), pos = 3)
+
+
+```
+
+::: {style="text-align: justify"}
+Z wykresu możemy wyciągnąć wniosek, że jeśli PD zawiera się w przedziale
+w przedziale \<0.2; 0.4\> kredyt spłaciłoby 817 osób, lecz nie jest to
+zadowalający wynik, gdyż liczba osób niewywiązująca się z zobowiązania
+byłaby równa 344. W predziale \<0.6; 1\> istnieją małe szanse na
+spłacenie kredytu. Sprośród 8626 osób, tylko 23 spłaciłoby kredyt przy
+PD zawierającym się w przedziale \<0,8; 1\>. Dlatego optymalnym PD jest
+\<0; 0.2\>. Klientom o niższym PD przypisywane są wyższe ratingi, co
+oznacza mniejsze ryzyko niewypłacalności. Z kolei klienci z wyższym PD
+otrzymują niższe ratingi, co wskazuje na większe ryzyko
+niewypłacalności.
+:::
+
+## PUNKTY ODCIĘCIA
+
+::: {style="text-align: justify"}
+W tym kroku powstaną **cutoff points**, czyli **punkty odcięcia**. Na
+podstawie prognozowanych powyżej prawdopodobieństw (probability of
+default) każda z obserwacji zostanie przypisane do jednej z dwóch klas.
+Punkt odcięcia został ustalony poprzez określony poziom ryzyka (apetytu
+na ryzyko), czyli wartośc wskaźnika PD, przy którym następuje
+niewykonanie zobowiązania o najwyższym poziomie ryzyka. Jako pierwszy
+punkt odcięcia przyjęta zostanie wartość 0.21, ponieważ jak wspomniano w
+poprzednim kroku w przedziale \<0.2; 0.4\> i \<0.6; 1\> istnieją małe
+szanse na spłacenie kredytu. Za odniesienie do ustalenia punktu odcięcia
+również posłuży wartość średniej zmiennej objaśnianej - loan_status.
+:::
+
+```{r}
+mean(dane$loan_status)
+
+```
+
+::: {style="text-align: justify"}
+Z racji, że średnia wynosi 21,7, za pierwszy punkt odcięcia przyjęta
+zostanie wartość równa **0,21**.
+:::
+
+```{r}
+### 0.21
+cutoff = 0.21
+pred_21 = ifelse(predykcja > cutoff, 1, 0)
+count(pred_21)
+matrix_21 = table(pred_21, zrealizowane_wartosci)
+# accuracy
+accuracy <- sum(diag(matrix_21)) / sum(matrix_21)
+# specificity
+specificity<-specificity(matrix_21) 
+# sensitivity
+sensitivity<-sensitivity(matrix_21) 
+cbind(accuracy, specificity, sensitivity)
+```
+
+::: {style="text-align: justify"}
+Przy przyjętym punkcie odcięcia kredyt otrzymałyby 6226 osób.
+
+-   Accuracy oznacza, że model poprawnie sklasyfikował 80.55%
+    obserwacji.
+
+-   Specificity oznacza, że model poprawnie sklasyfikował 71.68%
+    obserwacji negatywnych.
+
+-   Sensitivity oznacza, że model poprawnie sklasyfikował 82.26%
+    obserwacji pozytywnych.
+:::
+
+::: {style="text-align: justify"}
+Zdecydowano przyjąć jeszcze niższy poziom ponktu odcięcia równy
+**0.15**.
+:::
+
+```{r}
+### 0.15
+cutoff = 0.15
+pred_15 = ifelse(predykcja > cutoff, 1, 0)
+matrix_15 = table(pred_15, zrealizowane_wartosci)
+count(pred_15)
+# accuracy
+accuracy <- sum(diag(matrix_15)) / sum(matrix_15)
+# specificity
+specificity<-specificity(matrix_15) 
+# sensitivity
+sensitivity<-sensitivity(matrix_15) 
+cbind(accuracy, specificity, sensitivity)
+```
+
+::: {style="text-align: justify"}
+Jak widać im niższy punkt odcięcia tym mniejsza szansza na otrzymanie
+kredytu. W tym przypadku kredyt może otrzymać 5637 osób. oraz dwie miary
+są gorsze, są nimi accuracy oraz sensitivity. Natomiast model poprawnie
+sklasyfikował 79.24% obserwacji negatywnych, czyli sensitivity jest
+wyższy od poprzedniej wartości.
+:::
+
+::: {style="text-align: justify"}
+Badaniu poddano równiez poziom równy **0.10**.
+:::
+
+```{r}
+### 0.10
+
+cutoff = 0.10
+pred_10 = ifelse(predykcja > cutoff, 1, 0)
+matrix_10 = table(pred_10, zrealizowane_wartosci)
+count(pred_10)
+# accuracy
+accuracy <- sum(diag(matrix_10)) / sum(matrix_10)
+# specificity
+specificity <- specificity(matrix_10) 
+# sensitivity
+sensitivity <- sensitivity(matrix_10) 
+cbind(accuracy, specificity, sensitivity)
+```
+
+::: {style="text-align: justify"}
+Tylko 4950 wnioskodawców o kredyt otrzymało zgodę. W stosunku do
+pierwszego przyjętego progu, wartości w tym przypadku znacznie spadły.
+Jedynie specificity wzroło jeszcze bardziej niż w przypadku z punktem
+odcięcia = 0,15.
+:::
+
+::: {style="text-align: justify"}
+Ostatnim przyjętym punktem odcięcia jest wartość **0.05**
+:::
+
+```{r}
+### 0.05
+
+cutoff = 0.05
+pred_05 = ifelse(predykcja > cutoff, 1, 0)
+matrix_05 = table(pred_05, zrealizowane_wartosci)
+count(pred_05)
+# accuracy
+accuracy <- sum(diag(matrix_05)) / sum(matrix_05)
+# specificity
+specificity <- specificity(matrix_05) 
+# sensitivity
+sensitivity<-sensitivity(matrix_05) 
+cbind(accuracy, specificity, sensitivity)
+```
+
+::: {style="text-align: justify"}
+Punkt odcięcia 0.05 jest najniższą wartością graniczną przyjętą w
+ninijeszej analizie. Tylko 3727 osób otrzymałoby pozytywna zgodę na
+wniosek o kredyt. Wartość accuracy i sensitivity jest najniższa.
+Natomiast specificity wynosi aż 91,5%.
+:::
+
+::: {style="text-align: justify"}
+**PODSUMOWANIE** W miarę zmniejszania się wartości punktu odcięcia
+zwiększa się specyficzność, czyli procent trafnej predykcji
+niepowodzenia, a maleje czułość, czyli prawdopodobieństwo trafnej
+predykcji sukcesu. Z perspektywy analizy defaultu ważniejsze wydaje się
+prawidłowe przewidywanie niepowodzeń, czyli sytuacji, w których kredyt
+nie jest spłacany. Zmniejszenie wartości granicznych skutkuje również
+spadkiem precyzji, ale specyficzność powinna być w tym przypadku
+kluczowa.
+:::
+
+## KRZYWA ROC
+
+```{r message=FALSE, warning=FALSE}
+# ROC curve
+par(pty = "s")
+roc(zrealizowane_wartosci, predykcja, plot = TRUE, legacy.axes = TRUE)
+```
+
+::: {style="text-align: justify"}
+Krzywa ROC pokazuje zależność między czułością a specyficznością. Krzywa
+przebiega blisko lewej i górnej osi wykresu, co ogólnie oznacza, że
+model dobrze wykazał się w przewidywaniu niewypłacalności.
+:::
+
+## KALIBRACJA[^7]
+
+The art of probability-of-default curve calibration. Dirk Tasche[^8]
+Kalibracja ma na celu dopasowanie modelu tak, aby przewidywane wartości
+prawdopodobieństwa były zgodne z rzeczywistym ryzykiem w każdej randze.
+W celu dokonania kalibracji należy stworzyć rangi, punkt odcięcia ma
+wartośc 0.15 i i stał się odniesieniem do stworzenia rang.
+
+-   **A** - 0 - 0.05
+-   **B** - 0.05 - 0.10
+-   **C** - 0.10 - 0.15
+-   **D** - 0.15 - 1
+:::
+
+[^7]: <https://www.readcube.com/articles/10.2139%2Fssrn.2189870>
+
+[^8]: <https://cran.r-project.org/doc/contrib/Sharma-CreditScoring.pdf>
+
+```{r}
+#0.15
+
+# Tworzenie rang na podstawie wartości predykcji
+rangi <- cut(predykcja, breaks = c(-Inf, 0.05, 0.10 , 0.15, Inf), labels = c("A", "B", "C", "D"))
+
+# Połączenie rang
+df <- data.frame(rangi, zrealizowane_wartosci, predykcja) 
+
+# Wyświetlenie wyników
+datatable(df)
+
+
+
+```
+
+::: {style="text-align: justify"}
+Poniżej zostanie obliczony DR i PD_mean. DR, czyli Default Rate to
+średni wskaźnik realizacji, czyli rzeczywisty odsetek przypadków
+niewypłacalności w danej randze. Natomiast PD_mean obliczony dla
+poszczególnych rang (A, B, C, D) jest traktowany jako średnie
+przewidywane prawdopodobieństwo niewypłacalności.
+:::
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+
+d<- df%>% 
+  dplyr::group_by(rangi)%>%
+  dplyr::summarise(PD_mean <- mean(predykcja), DR <- mean(zrealizowane_wartosci))
+d
+```
+
+::: {style="text-align: justify"}
+Otrzymano tabelę wyników, gdzie wartości PD_mean są mniejsze w każdej
+randze od DR. Taka sytuacja może oznaczać, że model jest liberalny.
+Inaczej mówiąć model niedoszacowywuje ryzyka. Nie jest to dobra
+informacja, lecz trzeba zwrócić uwagę na jakość i wiarygodność
+wykorzystanych danych w badaniu.
+:::
+
+# DRZEWO DECYZYJNE
+
+::: {style="text-align: justify"}
+Drzewo decyzyjne jest popularnym modelem używanym do klasyfikacji w
+dziedzinie kredytowej. Opiera się na zasadzie podejmowania decyzji
+poprzez podział zbioru danych na podgrupy o różnych cechach. Drzewo
+decyzyjne składa się z węzłów i krawędzi, gdzie węzły reprezentują testy
+na atrybutach danych, a krawędzie reprezentują możliwe wyniki tych
+testów.
+:::
+
+```{r message=FALSE, warning=FALSE}
+library(rpart)
+
+fit <-  rpart(loan_status ~ ., data = dane_treningowe, method = "class")
+#print(fit)
+#summary(fit)
+#fit$cptable
+
+plotcp(fit)
+
+fit.pruned <- prune(fit,cp=0.011)
+#install.packages("rpart.plot")
+library(rpart.plot)
+
+prp(fit.pruned, type = 1, extra = 104,
+    fallen.leaves = TRUE, main="Decision Tree")
+
+#testowanie
+fit.pred <- predict(fit.pruned, dane_testowe, type="class")
+fit.perf <- table(dane_testowe$loan_status, fit.pred,
+                    dnn=c("Actual", "Predicted"))
+
+#macierz
+fit.perf
+
+(fit.perf[1,1]+fit.perf[2,2])/(fit.perf[1,1]+fit.perf[1,2]+fit.perf[2,2]+fit.perf[2,1])
+
+```
+
+-   Poprawnie zaklasyfikowane próbki klasy 0 (negative class): 6875
+
+-   Poprawnie zaklasyfikowane próbki klasy 1 (positive class): 927
+
+-   Błędnie zaklasyfikowane próbki klasy 0 jako 1 (false positive): 84
+
+-   Błędnie zaklasyfikowane próbki klasy 1 jako 0 (false negative): 740
+
+Ostateczna dokładność, jaką uzyskaliśmy, wynosi ***0.9044748***.
+
+# **PODSUMOWANIE**
+
+::: {style="text-align: justify"}
+W projekcie przedstawiono wybrane metody scoringowe pozwalające ocenić
+ryzyko kredytowe. Wykorzystanie regresji, drzewa decyzyjnego w
+kontekście klasyfikacji kredytowej dostarcza istotnych informacji
+dotyczących czynników wpływających na prawdopodobieństwo niespłacalności
+kredytu. Pozwala to lepiej zrozumieć i przewidzieć ryzyko związane z
+udzielaniem kredytów, co może pomóc w podejmowaniu lepszych decyzji
+dotyczących przyznawania pożyczek. W przypadku drzewa decyzjnego
+otrzymaliśmy bardzo wysoką dokładność - aż 90% i nieco niższą w
+przypadku regresji 80.55%. Wskaźnik PD (Probability of Default)
+powiązany z klasą ratingową, którą bank przydziela klientom w oparciu o
+skalę ryzyka, jakie generują, pozwolił na zobrazowanie szans przyznania
+kredytu.
+:::
