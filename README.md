@@ -1,0 +1,5 @@
+# probability-of-default
+
+Client creditworthiness assessment (rating) is used by banks in the process of making credit decisions. Rating is an evaluation of a client's future economic and financial situation assigned by the bank based on the applied model (algorithm). It impacts the pricing conditions of the loan and is utilized in client monitoring processes.
+
+The project presented selected scoring methods for assessing credit risk. The use of regression and decision tree in the context of credit classification provides valuable information about factors influencing the likelihood of loan default. This allows for a better understanding and prediction of the risks associated with lending, which can aid in making better decisions regarding loan approvals. In the case of the decision tree, we achieved a very high accuracy of 90%, and slightly lower accuracy of 80.55% for regression. The Probability of Default (PD) indicator, linked to the rating class assigned by the bank to clients based on the risk they pose, helps visualize the chances of credit approval.
